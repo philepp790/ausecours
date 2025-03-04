@@ -25,6 +25,6 @@ jobs:
         needs: [test2]
     uses: ./.github/workflows/ghcr.yaml
     secret: inherit
-        permissions:
-        contents: read
+            permissions:
+            contents: read
         packages: write
