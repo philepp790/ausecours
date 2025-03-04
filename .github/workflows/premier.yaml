@@ -21,7 +21,7 @@ jobs:
       - name: The Second
         run: echo Good Bye
 
-Bideris:
+bideris:
   needs: [test2]
     uses: ./.github/workflows/ghcr.yaml
     secret: inherit
