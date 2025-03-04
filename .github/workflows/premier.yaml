@@ -20,3 +20,11 @@ jobs:
     steps:
       - name: The Second
         run: echo Good Bye
+
+Bideris:
+  needs: [test2]
+    uses: ./.github/workflows/ghcr.yaml
+    secret: inherit
+    permission:
+        contents: read
+        packages: write
