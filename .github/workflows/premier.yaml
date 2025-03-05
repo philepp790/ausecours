@@ -30,7 +30,7 @@ jobs:
     uses: ./.github/workflows/deploy.yaml
     secrets: inherit
 
-      coulou:
+   coulou:
     needs: [Chelouterie]
     uses: ./.github/workflows/canary.yaml
     secrets: inherit
