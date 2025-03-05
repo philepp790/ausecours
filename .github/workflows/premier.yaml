@@ -26,6 +26,6 @@ jobs:
     secrets: inherit  # ✅ Permet de transmettre tous les secrets
 
   Chelouterie:
-    needs: [Biderie]
+    needs: [bideris]
     uses: ./.github/workflows/deploy.yaml
     secrets: inherit
