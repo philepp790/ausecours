@@ -1,4 +1,4 @@
-name: Test
+﻿name: Test
 
 on:
   push:
@@ -12,20 +12,16 @@ jobs:
       - name: The First
         run: |
           echo Hello
-          exit 1  
+          exit 1  # Correction de `return 1`
 
   test2:
     needs: [test]
     runs-on: ubuntu-latest
-    steps:  
+    steps:
       - name: The Second
         run: echo "Good Bye"
 
   bideris:
     needs: [test2]
     uses: ./.github/workflows/ghcr.yaml
-    with: 
-      secret: inherit  
-    permissions:
-      contents: read
-      packages: write
+    secrets: inherit  # ✅ Permet de transmettre tous les secrets
