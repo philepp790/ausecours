@@ -16,7 +16,6 @@ jobs:
         run: |
           TOKEN=$(curl -s -H "Metadata: true" \
           "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://management.azure.com/" \
-          --data-urlencode "client_id=${{ secrets.AZURE_MANAGED_IDENTITY_CLIENT_ID }}" \
           | jq -r '.access_token')
 
           echo "::add-mask::$TOKEN"
@@ -25,15 +24,15 @@ jobs:
       - name: Azure Login with Token
         shell: bash
         run: |
-          az login --identity --username ${{ secrets.AZURE_MANAGED_IDENTITY_CLIENT_ID }}
+          az login --identity --client-id ${{ secrets.AZURE_MANAGED_IDENTITY_CLIENT_ID }}
 
       - name: Azure CLI - Create Resource Group
         uses: azure/CLI@v2
         with:
           azcliversion: 2.0.72
           inlineScript: |
-            az group create --name ${{ env.ResourceGroupName }} --location ${{ env.ResourceGroupLocation }}
-            echo "✅ Azure Resource Group Created"
+            az group create --name ${{ env.ResourceGroupName }} --location ${{ env.ResourceGroupLocation }} -y
+            echo "Azure Resource Group Created"
 
       - name: Azure ARM deploy
         uses: azure/arm-deploy@v2
@@ -51,9 +50,9 @@ jobs:
         uses: azure/CLI@v2
         with:
           inlineScript: |
-            export AZURE_VM_IP=$(az vm show -d -g ${{ env.ResourceGroupName }} -n "Canary" --query publicIps -o tsv)
+            AZURE_VM_IP=$(az vm show -d -g ${{ env.ResourceGroupName }} -n "Canary" --query publicIps -o tsv)
             echo "AZURE_VM_IP=$AZURE_VM_IP" >> $GITHUB_ENV
-            echo "✅ Public IP Retrieved: $AZURE_VM_IP"
+            echo "Public IP Retrieved: $AZURE_VM_IP"
 
       - name: Install Docker on VM
         uses: appleboy/ssh-action@v1.0.3
@@ -64,6 +63,7 @@ jobs:
           password: ${{ secrets.AZURE_VM_PASSWORD }}
           script: | 
             curl -o install_docker.sh https://raw.githubusercontent.com/azure-custom-cli/scripts/refs/heads/main/install_docker_ubuntu.sh
+            chmod +x install_docker.sh
             ls -al
             bash ./install_docker.sh
 
