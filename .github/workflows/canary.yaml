@@ -23,8 +23,8 @@ jobs:
 
       - name: Azure Login with Token
         shell: bash
-        run: |
-          az login --identity --client-id ${{ secrets.AZURE_MANAGED_IDENTITY_CLIENT_ID }}
+         run: |
+           az login --identity --resource-id "/subscriptions/YOUR-SUBSCRIPTION-ID/resourceGroups/Florian-test/providers/Microsoft.ManagedIdentity/userAssignedIdentities/FlorianIdentity"
 
       - name: Azure CLI - Create Resource Group
         uses: azure/CLI@v2
