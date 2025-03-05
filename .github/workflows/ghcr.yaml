@@ -1,11 +1,11 @@
-name: Github Package
+﻿name: Github Package
 
 on:
-  workflow_call
+  workflow_call:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{github.repository}}
+  IMAGE_NAME: ${{ github.repository }}  # ✅ Ajout d'un espace après `${{`
 
 jobs:
   bide:
@@ -27,13 +27,13 @@ jobs:
       - name: Registry Login
         uses: docker/login-action@v3
         with:
-          registry: ${{env.REGISTRY}}
-          username: ${{github.actor}}
-          password: ${{secrets.BUILD_PAT}}
+          registry: ${{ env.REGISTRY }}  # ✅ Ajout d'un espace après `${{`
+          username: ${{ github.actor }}  # ✅ Ajout d'un espace après `${{`
+          password: ${{ secrets.BUILD_PAT }}  # ✅ Ajout d'un espace après `${{`
 
       - name: Build and push to GH Package
         uses: docker/build-push-action@v4
         with:
           context: backend
           push: true
-          tags: ${{env.REGISTRY}}/philepp790/back-ausecours:latest
+          tags: ${{ env.REGISTRY }}/philepp790/back-ausecours:latest  # ✅ Ajout d'un espace après `${{`

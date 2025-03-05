@@ -12,20 +12,20 @@ jobs:
       - name: The First
         run: |
           echo Hello
-          exit 1  # Remplace `return 1` par `exit 1` pour arrêter avec une erreur
+          exit 1  
 
   test2:
     needs: [test]
     runs-on: ubuntu-latest
-    steps:  # Mauvaise indentation corrigée ici
+    steps:  
       - name: The Second
         run: echo "Good Bye"
 
   bideris:
     needs: [test2]
     uses: ./.github/workflows/ghcr.yaml
-    with:  # `with` est nécessaire pour passer des paramètres
-      secret: inherit  # Il est possible que tu veuilles `secrets: inherit` au lieu de `secret`
+    with: 
+      secret: inherit  
     permissions:
       contents: read
       packages: write
