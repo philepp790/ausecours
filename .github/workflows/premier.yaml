@@ -12,7 +12,6 @@ jobs:
       - name: The First
         run: |
           echo Hello
-          exit 1  # Correction de `return 1`
 
   test2:
     needs: [test]
