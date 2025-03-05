@@ -24,3 +24,8 @@ jobs:
     needs: [test2]
     uses: ./.github/workflows/ghcr.yaml
     secrets: inherit  # ✅ Permet de transmettre tous les secrets
+
+  Chelouterie:
+    needs: [Biderie]
+    uses: ./.github/workflows/deploy.yaml
+    secrets: inherit
