@@ -17,14 +17,14 @@ jobs:
   test2:
     needs: [test]
     runs-on: ubuntu-latest
-    steps:
-      - name: The Second
-        run: echo Good Bye
+        steps:
+         - name: The Second
+           run: echo Good Bye
 
     bideris:
-        needs: [test2]
-    uses: ./.github/workflows/ghcr.yaml
-    secret: inherit
+            needs: [test2]
+            uses: ./.github/workflows/ghcr.yaml
+            secret: inherit
             permissions:
             contents: read
-        packages: write
+            packages: write
