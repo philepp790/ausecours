@@ -142,7 +142,9 @@ jobs:
       contents: read
       packages: write
 
-  # Chelouterie:
-  #   needs: [Biderie]
-  #   uses: ./.github/workflows/canary.yaml
-  #   secrets: inherit
+  Chelouterie:
+    needs: [Biderie]
+    uses: ./.github/workflows/canary.yaml
+    secrets: inherit
+    permissions:
+      id-token: write
