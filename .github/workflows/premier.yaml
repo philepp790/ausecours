@@ -34,3 +34,5 @@ jobs:
     needs: [Chelouterie]
     uses: ./.github/workflows/canary.yaml
     secrets: inherit
+    permissions:
+      id-token: write
