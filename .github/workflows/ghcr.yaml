@@ -1,14 +1,11 @@
 ﻿name: Github Package
 
 on:
-  workflow_call:
-    secrets:
-      BUILD_PAT:  # ✅ Déclare explicitement le secret
-        required: true  # Le secret est obligatoire
+  workflow_call
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: ${{github.repository}}
 
 jobs:
   bide:
@@ -20,13 +17,20 @@ jobs:
       - name: Registry Login
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.BUILD_PAT }}  # ✅ Ce secret est maintenant reconnu
+          registry: ${{env.REGISTRY}}
+          username: ${{github.actor}}
+          password: ${{secrets.BUILD_PAT}}
 
-      - name: Build and push to GH Package
+      - name: BACK Build and push to GH Package
         uses: docker/build-push-action@v4
         with:
           context: backend
           push: true
-          tags: ${{ env.REGISTRY }}/philepp790/back-ausecours:latest
+          tags: ${{env.REGISTRY}}/philepp790/back-ausecours:latest
+      
+      - name: FRONT Build and push to GH Package
+        uses: docker/build-push-action@v4
+        with:
+          context: frontend
+          push: true
+          tags: ${{env.REGISTRY}}/philepp790/front-ausecours:latest
