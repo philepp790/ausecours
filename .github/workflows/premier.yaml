@@ -10,12 +10,12 @@ on:
 
 jobs:
   Backend:
-    if: github.event_name == 'pull_request'
+    if: ${{github.event_name == 'pull_request'}}
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: backend
-
+        
     services:
       mariadb:
         image: mariadb:latest
@@ -26,9 +26,7 @@ jobs:
           MARIADB_PASSWORD: test
         ports:
           - 3306:3306
-        options: > 
-          --health-cmd="healthcheck.sh --connect --innodb_initialized" 
-          --health-interval=10s --health-timeout=5s --health-retries=3
+        options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=10s --health-timeout=5s --health-retries=3                 
 
     env:
       BDD_HOST: 127.0.0.1
@@ -37,33 +35,33 @@ jobs:
       BDD_PASS: test
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Database Connection Check
+      - name: Database Cnx Check
         run: |
           sudo apt-get install -y mysql-client
           mysql --host 127.0.0.1 --port 3306 -u root -ptoor -e "SHOW DATABASES"
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 20.x
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: npm i
 
-      - name: Initialize Database
+      - name: Init Bdd
         run: npm run initbdd
 
-      - name: Populate Database
+      - name: Populate BDD
         run: |
           mysql -u root -ptoor --host 127.0.0.1 --port 3306 --database test < ./test/insert_test_user.sql
       
-      - name: Run Tests and Coverage
+      - name: Run all test and coverage
         run: npm run test:cov
 
-      - name: Upload Coverage Report
+      - name: Upload Coverage Artifact
         uses: actions/upload-artifact@v4
         with:
           name: back-coverage-report
@@ -78,12 +76,12 @@ jobs:
         working-directory: frontend
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Start Backend Build
+      - name: Start Build backend
+        working-directory: backend
         run: |
-          cd backend
           docker compose -f docker-compose-build.yml up -d
           docker ps -a
 
@@ -92,25 +90,25 @@ jobs:
         with:
           time: '10s'
       
-      - name: Test Backend Container
+      - name: test Backend Container
         if: success()
         run: curl http://127.0.0.1:23000
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 20.x
 
-      - name: Install Cypress & Dependencies
+      - name: Cypress E2E Install
         uses: cypress-io/github-action@v6
         with:
           runTests: false
           working-directory: frontend
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: npm i
 
-      - name: Start Cypress E2E Tests
+      - name: Start E2E  Test
         uses: cypress-io/github-action@v6
         with: 
           install: false
@@ -131,14 +129,13 @@ jobs:
           path: frontend/cypress/videos
           retention-days: 3
 
-      - name: Clean Backend Docker
+      - name: Clean Builder Backend Docker
         if: always()
-        run: |
-          cd backend
-          docker compose -f docker-compose-build.yml down
+        working-directory: backend
+        run: docker compose -f docker-compose-build.yml down
 
   Biderie:
-    if: github.event_name == 'push'
+    if: ${{github.event_name == 'push'}}
     uses: ./.github/workflows/ghcr.yaml
     secrets: inherit
     permissions:
