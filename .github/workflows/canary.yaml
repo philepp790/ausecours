@@ -1,4 +1,4 @@
-﻿name: Canary Deployment 
+﻿name: Canary Deployment
 
 on:
   workflow_call
@@ -7,86 +7,73 @@ jobs:
   create_vm_up_compose:
     runs-on: ubuntu-latest
     env:
-      ResourceGroupName: "micsi24"
-      ResourceGroupLocation: "Francecentral"
+      ResourceGroupName: "micsi24sortitoutseul"
+      ResourceGroupLocation: "francecentral"
 
     steps:
-      - name: Get Azure Access Token from Managed Identity
-        shell: bash
-        run: |
-          TOKEN=$(curl -s -H "Metadata: true" \
-          "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://management.azure.com/" \
-          | jq -r '.access_token')
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{secrets.AZURE_CREDENTIALS}}
 
-          echo "::add-mask::$TOKEN"
-          echo "AZURE_ACCESS_TOKEN=$TOKEN" >> $GITHUB_ENV
-
-      - name: Azure Login with Token
-        shell: bash
-         run: |
-           az login --identity --resource-id "/subscriptions/YOUR-SUBSCRIPTION-ID/resourceGroups/Florian-test/providers/Microsoft.ManagedIdentity/userAssignedIdentities/FlorianIdentity"
-
-      - name: Azure CLI - Create Resource Group
+      - name: Azure CLI Create Resource Group
         uses: azure/CLI@v2
         with:
-          azcliversion: 2.0.72
           inlineScript: |
-            az group create --name ${{ env.ResourceGroupName }} --location ${{ env.ResourceGroupLocation }} -y
-            echo "Azure Resource Group Created"
-
-      - name: Azure ARM deploy
+            #!/bin/bash
+            az groupe create --name ${{env.ResourceGroupName}} --location ${{env.ResourceGroupLocation}}
+            echo "Azure resource group created"
+    
+      - name: Azure ARM Deploy
         uses: azure/arm-deploy@v2
         with:
-          resourceGroupName: ${{ env.ResourceGroupName }}
-          template: https://github.com/Azure/azure-quickstart-templates/blob/master/quickstarts/microsoft.compute/vm-simple-linux/azuredeploy.json
-          parameters: >
-            adminUsername=${{ secrets.AZURE_VM_LOGIN }}
-            adminPassword=${{ secrets.AZURE_VM_PASSWORD }}
-            vmName="Canary"
-            vmSize="Standard_B2s"
-
-      - name: Get Public IP
+          resourceGroupName: ${{env.ResourceGroupName}}
+          template: https://raw.githubusercontent.com/Azure/azure-quickstart-templates/refs/heads/master/quickstarts/microsoft.compute/vm-simple-linux/azuredeploy.json
+          parameters: adminUsername=${{secrets.AZURE_VM_LOGIN}} adminPasswordOrKey=${{secrets.AZURE_VM_PASSWORD}} vmName="Canary" vmSize="Standard_B2s"
+      
+      - name: Get Public IP @
         if: success()
         uses: azure/CLI@v2
         with:
           inlineScript: |
-            AZURE_VM_IP=$(az vm show -d -g ${{ env.ResourceGroupName }} -n "Canary" --query publicIps -o tsv)
-            echo "AZURE_VM_IP=$AZURE_VM_IP" >> $GITHUB_ENV
-            echo "Public IP Retrieved: $AZURE_VM_IP"
+            #!/bin/bash
+            az vm show -d -g ${{env.ResourceGroupName}} -n Canary --query publicIps -o tsv
+            echo "AZURE_VM_IP=$(az vm show -d -g ${{env.ResourceGroupName}} -n Canary --query publicIps -o tsv)" >> $GITHUB_ENV
 
       - name: Install Docker on VM
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ env.AZURE_VM_IP }}
-          port: ${{ secrets.PORT }}
-          username: ${{ secrets.AZURE_VM_LOGIN }}
-          password: ${{ secrets.AZURE_VM_PASSWORD }}
-          script: | 
+          host: ${{env.AZURE_VM_IP}}
+          port: ${{secrets.PORT}} 
+          username: ${{secrets.AZURE_VM_LOGIN}}
+          password: ${{secrets.AZURE_VM_PASSWORD}}
+          script: |
             curl -o install_docker.sh https://raw.githubusercontent.com/azure-custom-cli/scripts/refs/heads/main/install_docker_ubuntu.sh
-            chmod +x install_docker.sh
             ls -al
             bash ./install_docker.sh
 
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v3
-
+    
       - name: Update compose file
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ env.AZURE_VM_IP }}
-          port: ${{ secrets.PORT }}
-          username: ${{ secrets.AZURE_VM_LOGIN }}
-          password: ${{ secrets.AZURE_VM_PASSWORD }}
+          host: ${{env.AZURE_VM_IP}}
+          port: ${{secrets.PORT}} 
+          username: ${{secrets.AZURE_VM_LOGIN}}
+          password: ${{secrets.AZURE_VM_PASSWORD}}
+
           source: "./docker-compose.yml"
           target: "."
 
       - name: Start compose file
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ env.AZURE_VM_IP }}
-          port: ${{ secrets.PORT }}
-          username: ${{ secrets.AZURE_VM_LOGIN }}
-          password: ${{ secrets.AZURE_VM_PASSWORD }}
+          host: ${{env.AZURE_VM_IP}}
+          port: ${{secrets.PORT}} 
+          username: ${{secrets.AZURE_VM_LOGIN}}
+          password: ${{secrets.AZURE_VM_PASSWORD}}
+
           script: |
-            docker pull ghcr.io/philepp790/back-ausecours:latest
+            docker pull ghcr.io/floriansp40/back-ausecours:latest
             docker-compose up -d

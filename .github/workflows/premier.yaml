@@ -23,14 +23,14 @@ jobs:
   bideris:
     needs: [test2]
     uses: ./.github/workflows/ghcr.yaml
-    secrets: inherit  # ✅ Permet de transmettre tous les secrets
+    secrets: inherit  
 
   Chelouterie:
     needs: [bideris]
     uses: ./.github/workflows/deploy.yaml
     secrets: inherit
 
-  coulou:  # ✅ Corrigé (aligné avec les autres jobs)
+  coulou:  
     needs: [Chelouterie]
     uses: ./.github/workflows/canary.yaml
     secrets: inherit
